@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700;800;900&family=Work+Sans:ital,wght@0,400;0,600;1,400;1,600&display=swap');
+
+@theme {
+  --color-navy: #0F2438;
+  --color-accent-green: #7ED957;
+  --color-accent-blue: #8FC6E8;
+  --color-cream: #F1EFE7;
+  --color-near-black: #101828;
+  --color-muted-gray: #4B5563;
+  --color-dark-card: #111111;
+  
+  --font-sans: "Inter", "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Poppins", var(--font-sans);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #F1EFE7; /* Editorial Cream background */
+  color: #101828;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+}
+
+/* Custom styled headers for the editorial look */
+.editorial-header-underline {
+  display: inline-block;
+  border-bottom: 4px solid #7ED957;
+  padding-bottom: 4px;
+}
+
+/* Custom animation effects */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}

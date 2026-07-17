@@ -1,0 +1,6 @@
+{
+  "name": "Jua Terms",
+  "description": "Simplify. Clarify. Consent Starts with Clarity. A digital rights advocacy campaign championing simple and clear terms and conditions for informed consent.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
