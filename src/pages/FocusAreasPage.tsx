@@ -3,17 +3,14 @@ import { motion } from "motion/react";
 import Timeline from "../components/Timeline";
 import { CAMPAIGN_FOCUS_AREAS } from "../data/campaignData";
 import { applySeoDescription } from "../utils/seo";
+import { fetchContent } from "../lib/content";
 
 export default function FocusAreasPage() {
   const [focusAreas, setFocusAreas] = useState(CAMPAIGN_FOCUS_AREAS);
 
   useEffect(() => {
     document.title = "Our Focus Areas | Jua Terms";
-    fetch("/api/content")
-      .then((res) => {
-        if (res.ok) return res.json();
-        throw new Error("Unable to fetch content");
-      })
+    fetchContent()
       .then((data) => {
         if (data.focusAreas) setFocusAreas(data.focusAreas);
         if (data.siteSettings) applySeoDescription(data.siteSettings);

@@ -14,6 +14,7 @@ import {
 import Logo from "./Logo";
 import CampaignModal from "./CampaignModal";
 import { CAMPAIGN_CONTACT, FOOTER_THANK_YOU } from "../data/campaignData";
+import { fetchContent } from "../lib/content";
 
 export default function Layout() {
   const location = useLocation();
@@ -30,11 +31,7 @@ export default function Layout() {
 
   useEffect(() => {
     // Sync shared content slice
-    fetch("/api/content")
-      .then((res) => {
-        if (res.ok) return res.json();
-        throw new Error();
-      })
+    fetchContent()
       .then((data) => {
         if (data.siteSettings) setSiteSettings(data.siteSettings);
         if (data.footer) setFooter(data.footer);

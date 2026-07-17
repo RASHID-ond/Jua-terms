@@ -4,6 +4,7 @@ import { Users, ArrowRight, Calendar, MapPin, Award, X } from "lucide-react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import Logo from "../components/Logo";
 import { applySeoDescription } from "../utils/seo";
+import { fetchContent } from "../lib/content";
 import { 
   CAMPAIGN_ABOUT, 
   CAMPAIGN_HIGHLIGHTS, 
@@ -26,11 +27,7 @@ export default function HomePage() {
 
   useEffect(() => {
     document.title = DEFAULT_HOME_TITLE;
-    fetch("/api/content")
-      .then((res) => {
-        if (res.ok) return res.json();
-        throw new Error("Unable to fetch content");
-      })
+    fetchContent()
       .then((data) => {
         if (data.about) setAbout(data.about);
         if (data.highlights) setHighlights(data.highlights);

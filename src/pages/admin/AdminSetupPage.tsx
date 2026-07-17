@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Shield, Mail, User, Key, AlertCircle, CheckCircle2 } from "lucide-react";
+import { anyAdminExists, createFirstSuperAdmin } from "../../lib/auth";
 
 export default function AdminSetupPage() {
   const navigate = useNavigate();
@@ -23,16 +24,11 @@ export default function AdminSetupPage() {
 
   const checkStatus = async () => {
     try {
-      const res = await fetch("/api/auth/setup-status");
-      if (res.ok) {
-        const data = await res.json();
-        setSetupRequired(data.setupRequired);
-        // If setup is not required, redirect immediately to login
-        if (!data.setupRequired) {
-          navigate("/admin");
-        }
-      } else {
-        throw new Error();
+      const exists = await anyAdminExists();
+      setSetupRequired(!exists);
+      // If setup is not required, redirect immediately to login
+      if (exists) {
+        navigate("/admin");
       }
     } catch (e) {
       setError("Failed to verify system setup status.");
@@ -46,17 +42,7 @@ export default function AdminSetupPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/setup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password })
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Setup failed");
-      }
-
+      await createFirstSuperAdmin(name, email, password);
       setSuccess(true);
       setTimeout(() => {
         navigate("/admin");

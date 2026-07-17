@@ -4,6 +4,7 @@ import { Calendar, MapPin, Sparkles, ArrowRight, X, Award } from "lucide-react";
 import { CAMPAIGN_HIGHLIGHTS } from "../data/campaignData";
 import CampaignHighlightsSection from "../components/CampaignHighlightsSection";
 import { applySeoDescription } from "../utils/seo";
+import { fetchContent } from "../lib/content";
 
 export default function HighlightsPage() {
   const [highlights, setHighlights] = useState(CAMPAIGN_HIGHLIGHTS);
@@ -12,11 +13,7 @@ export default function HighlightsPage() {
 
   useEffect(() => {
     document.title = "Campaign Highlights | Jua Terms";
-    fetch("/api/content")
-      .then((res) => {
-        if (res.ok) return res.json();
-        throw new Error("Unable to fetch content");
-      })
+    fetchContent()
       .then((data) => {
         if (data.highlights) setHighlights(data.highlights);
         if (data.siteSettings) applySeoDescription(data.siteSettings);

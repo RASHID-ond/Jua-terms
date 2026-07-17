@@ -29,6 +29,11 @@ import {
   AlertCircle
 } from "lucide-react";
 
+import { supabase } from "../lib/supabaseClient";
+import { fetchContent, saveContent as saveContentToSupabase } from "../lib/content";
+import { signIn, signOut, getCurrentAdmin, logAudit, type AdminProfile } from "../lib/auth";
+import { uploadImage } from "../lib/upload";
+
 interface AdminUser {
   id: string;
   email: string;
@@ -60,8 +65,8 @@ interface AdminDashboardProps {
 
 export default function AdminDashboard({ onBackToSite, onContentUpdated }: AdminDashboardProps) {
   // Auth state
-  const [token, setToken] = useState<string | null>(localStorage.getItem("jua_terms_admin_token"));
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<AdminProfile | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -98,25 +103,29 @@ export default function AdminDashboard({ onBackToSite, onContentUpdated }: Admin
   // Upload state helper
   const [uploadLoading, setUploadLoading] = useState<string | null>(null);
 
-  // Parse logged-in user details from local storage or verify JWT
+  // Check for an existing Supabase session on load, and stay in sync with
+  // sign-in/sign-out events (e.g. token refresh, or logging in from another tab).
   useEffect(() => {
-    if (token) {
-      fetch("/api/auth/me", {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then((res) => {
-          if (res.ok) return res.json();
-          throw new Error("Invalid token");
-        })
-        .then((data) => {
-          setUser(data.user);
-          fetchAdminData();
-        })
-        .catch(() => {
-          handleLogout();
-        });
-    }
-  }, [token]);
+    let active = true;
+
+    getCurrentAdmin().then((admin) => {
+      if (!active) return;
+      setUser(admin);
+      setAuthLoading(false);
+      if (admin) fetchAdminData();
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, _session) => {
+      getCurrentAdmin().then((admin) => {
+        setUser(admin);
+      });
+    });
+
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
 
   const showToast = (text: string, type: "success" | "error" = "success") => {
     setNotification({ text, type });
@@ -129,21 +138,13 @@ export default function AdminDashboard({ onBackToSite, onContentUpdated }: Admin
     setLoginLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: loginEmail, password: loginPassword })
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Login failed");
+      await signIn(loginEmail, loginPassword);
+      const admin = await getCurrentAdmin();
+      if (!admin) {
+        throw new Error("This account is not registered as an admin, or has been deactivated.");
       }
-
-      localStorage.setItem("jua_terms_admin_token", data.token);
-      setToken(data.token);
-      setUser(data.user);
-      showToast("Signed in successfully as " + data.user.name);
+      setUser(admin);
+      showToast("Signed in successfully as " + admin.name);
     } catch (err: any) {
       setLoginError(err.message || "Something went wrong");
     } finally {
@@ -151,9 +152,8 @@ export default function AdminDashboard({ onBackToSite, onContentUpdated }: Admin
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("jua_terms_admin_token");
-    setToken(null);
+  const handleLogout = async () => {
+    await signOut();
     setUser(null);
     setMessages([]);
     setAdmins([]);
@@ -161,80 +161,64 @@ export default function AdminDashboard({ onBackToSite, onContentUpdated }: Admin
   };
 
   const fetchAdminData = async () => {
-    if (!token) return;
     try {
       // 1. Fetch live site content
-      const contentRes = await fetch("/api/content");
-      if (contentRes.ok) {
-        const c = await contentRes.json();
-        setSiteSettings(c.siteSettings);
-        setAbout(c.about);
-        setVisionMission(c.visionMission);
-        setFocusAreas(c.focusAreas);
-        setApproach(c.approach);
-        setEvents(c.events);
-        setHighlights(c.highlights);
-        setTeam(c.team || []);
-        setPartners(c.partners || []);
-        setFooter(c.footer);
-      }
+      const c = await fetchContent();
+      setSiteSettings(c.siteSettings);
+      setAbout(c.about);
+      setVisionMission(c.visionMission);
+      setFocusAreas(c.focusAreas);
+      setApproach(c.approach);
+      setEvents(c.events);
+      setHighlights(c.highlights);
+      setTeam(c.team || []);
+      setPartners(c.partners || []);
+      setFooter(c.footer);
 
-      // 2. Fetch admin messages
-      const msgRes = await fetch("/api/messages", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (msgRes.ok) {
-        const msgs = await msgRes.json();
-        setMessages(msgs);
+      // 2. Fetch admin messages (blocked by RLS unless the caller is an admin)
+      const { data: msgs, error: msgError } = await supabase
+        .from("messages")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (!msgError && msgs) {
+        setMessages(msgs.map((m: any) => ({ ...m, date: m.created_at })));
       }
 
       // 3. Fetch audit logs
-      const logRes = await fetch("/api/audit-logs", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (logRes.ok) {
-        const logs = await logRes.json();
-        setAuditLogs(logs);
+      const { data: logs, error: logError } = await supabase
+        .from("audit_logs")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (!logError && logs) {
+        setAuditLogs(
+          logs.map((l: any) => ({ id: l.id, user: l.admin_email, action: l.action, timestamp: l.created_at }))
+        );
       }
 
-      // 4. Fetch admin users (only super admins can view)
-      const admRes = await fetch("/api/admins", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (admRes.ok) {
-        const adms = await admRes.json();
-        setAdmins(adms);
+      // 4. Fetch admin users (RLS only returns all rows to a Super Admin)
+      const { data: adms, error: admError } = await supabase.from("admins").select("*");
+      if (!admError && adms) {
+        setAdmins(adms as AdminUser[]);
       }
     } catch (e) {
       console.error("Failed to load admin data", e);
     }
   };
 
-  // Re-fetch when tabs shift or when we open dashboards
+  // Re-fetch when tabs shift
   useEffect(() => {
-    if (token) {
+    if (user) {
       fetchAdminData();
     }
-  }, [activeTab, token]);
+  }, [activeTab]);
 
   // Handle live content saves
   const saveContent = async (updatedFields: any) => {
-    if (!token) return;
     setSaving(true);
     try {
-      const res = await fetch("/api/content", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(updatedFields)
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Failed to update content");
-      }
+      await saveContentToSupabase(updatedFields);
+      if (user) await logAudit(user.email, `Updated content: ${Object.keys(updatedFields).join(", ")}`);
 
       showToast("Content changes saved successfully");
       onContentUpdated(); // Trigger refresh on public side
@@ -249,52 +233,31 @@ export default function AdminDashboard({ onBackToSite, onContentUpdated }: Admin
   // Image upload function
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
     const file = e.target.files?.[0];
-    if (!file || !token) return;
+    if (!file) return;
 
     setUploadLoading(file.name);
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const base64 = event.target?.result as string;
-      try {
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ filename: file.name, base64 })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          callback(data.url);
-          showToast("Image uploaded successfully");
-        } else {
-          throw new Error(data.error || "Upload failed");
-        }
-      } catch (err: any) {
+    uploadImage(file)
+      .then((url) => {
+        callback(url);
+        showToast("Image uploaded successfully");
+      })
+      .catch((err: any) => {
         showToast(err.message || "Upload failed", "error");
-      } finally {
+      })
+      .finally(() => {
         setUploadLoading(null);
-      }
-    };
-    reader.readAsDataURL(file);
+      });
   };
 
   // Message Actions
   const markMessageRead = async (id: string, read: boolean) => {
-    if (!token) return;
     try {
-      const res = await fetch(`/api/messages/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ read })
-      });
-      if (res.ok) {
+      const { error } = await supabase.from("messages").update({ read }).eq("id", id);
+      if (!error) {
         setMessages(messages.map((m) => (m.id === id ? { ...m, read } : m)));
         showToast("Message marked as " + (read ? "read" : "unread"));
+      } else {
+        throw error;
       }
     } catch (err) {
       showToast("Failed to update message status", "error");
@@ -302,40 +265,37 @@ export default function AdminDashboard({ onBackToSite, onContentUpdated }: Admin
   };
 
   const deleteMessage = async (id: string) => {
-    if (!token || !window.confirm("Are you sure you want to delete this message?")) return;
+    if (!window.confirm("Are you sure you want to delete this message?")) return;
     try {
-      const res = await fetch(`/api/messages/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
+      const { error } = await supabase.from("messages").delete().eq("id", id);
+      if (!error) {
         setMessages(messages.filter((m) => m.id !== id));
         showToast("Message deleted successfully");
+      } else {
+        throw error;
       }
     } catch (err) {
       showToast("Failed to delete message", "error");
     }
   };
 
-  // Create new Admin user (Super Admin Only)
+  // Create new Admin user (Super Admin Only) — routed through a Supabase Edge
+  // Function since creating another user's account requires a privileged key
+  // that must never be exposed in the browser.
   const handleAddAdminSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token) return;
-
     try {
-      const res = await fetch("/api/admins", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(newAdmin)
-      });
-      const data = await res.json();
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) throw new Error("Your session has expired. Please log in again.");
 
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to create user");
-      }
+      const { data, error } = await supabase.functions.invoke("create-admin", {
+        body: newAdmin,
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+
+      if (error) throw new Error(error.message || "Failed to create user");
+      if (data?.error) throw new Error(data.error);
 
       showToast("Admin account registered successfully");
       setShowAddAdminModal(false);
@@ -346,19 +306,18 @@ export default function AdminDashboard({ onBackToSite, onContentUpdated }: Admin
     }
   };
 
+  // Deactivates an admin account (soft delete). Actually deleting the
+  // underlying login requires the same privileged key as account creation —
+  // deactivating is enough to immediately revoke their access.
   const handleDeleteAdmin = async (id: string) => {
-    if (!token || !window.confirm("Are you sure you want to delete this admin account?")) return;
+    if (!window.confirm("Are you sure you want to deactivate this admin account?")) return;
     try {
-      const res = await fetch(`/api/admins/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showToast("Admin user deleted");
+      const { error } = await supabase.from("admins").update({ active: false }).eq("id", id);
+      if (!error) {
+        showToast("Admin account deactivated");
         fetchAdminData();
       } else {
-        throw new Error(data.error);
+        throw error;
       }
     } catch (err: any) {
       showToast(err.message, "error");
@@ -396,9 +355,20 @@ export default function AdminDashboard({ onBackToSite, onContentUpdated }: Admin
   };
 
   // ----------------------------------------------------
+  // RENDER LOADING STATE WHILE CHECKING FOR AN EXISTING SESSION
+  // ----------------------------------------------------
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#0F2438] flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-[#7ED957] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // ----------------------------------------------------
   // RENDER LOGIN SCREEN (IF NOT AUTHENTICATED)
   // ----------------------------------------------------
-  if (!token || !user) {
+  if (!user) {
     return (
       <div className="min-h-screen bg-[#0F2438] flex flex-col justify-center items-center px-4 relative overflow-hidden font-sans">
         {/* Decorative branding background rings */}

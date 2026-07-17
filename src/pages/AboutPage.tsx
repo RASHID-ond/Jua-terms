@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { CAMPAIGN_ABOUT, CAMPAIGN_VISION_MISSION } from "../data/campaignData";
 import { applySeoDescription } from "../utils/seo";
+import { fetchContent } from "../lib/content";
 
 export default function AboutPage() {
   const [about, setAbout] = useState(CAMPAIGN_ABOUT);
@@ -9,11 +10,7 @@ export default function AboutPage() {
 
   useEffect(() => {
     document.title = "About Us | Jua Terms";
-    fetch("/api/content")
-      .then((res) => {
-        if (res.ok) return res.json();
-        throw new Error("Unable to fetch content");
-      })
+    fetchContent()
       .then((data) => {
         if (data.about) setAbout(data.about);
         if (data.visionMission) setVisionMission(data.visionMission);

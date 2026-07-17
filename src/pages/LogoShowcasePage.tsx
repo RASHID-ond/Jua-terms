@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import Logo from "../components/Logo";
+import { fetchContent } from "../lib/content";
 
 export default function LogoShowcasePage() {
   const [logoImage, setLogoImage] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     document.title = "Our Logo | Jua Terms";
-    fetch("/api/content")
-      .then((res) => {
-        if (res.ok) return res.json();
-        throw new Error();
-      })
+    fetchContent()
       .then((data) => {
         if (data.siteSettings && data.siteSettings.logoImage) {
           setLogoImage(data.siteSettings.logoImage);

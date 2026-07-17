@@ -3,17 +3,14 @@ import { motion } from "motion/react";
 import TeamCard from "../components/TeamCard";
 import { TEAM_MEMBERS } from "../data/campaignData";
 import { applySeoDescription } from "../utils/seo";
+import { fetchContent } from "../lib/content";
 
 export default function TeamPage() {
   const [team, setTeam] = useState(TEAM_MEMBERS);
 
   useEffect(() => {
     document.title = "Our Team | Jua Terms";
-    fetch("/api/content")
-      .then((res) => {
-        if (res.ok) return res.json();
-        throw new Error("Unable to fetch content");
-      })
+    fetchContent()
       .then((data) => {
         if (data.team) setTeam(data.team);
         if (data.siteSettings) applySeoDescription(data.siteSettings);

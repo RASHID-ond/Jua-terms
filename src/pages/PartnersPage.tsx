@@ -2,17 +2,14 @@ import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { PARTNERS } from "../data/campaignData";
 import { applySeoDescription } from "../utils/seo";
+import { fetchContent } from "../lib/content";
 
 export default function PartnersPage() {
   const [partners, setPartners] = useState(PARTNERS);
 
   useEffect(() => {
     document.title = "Our Partners | Jua Terms";
-    fetch("/api/content")
-      .then((res) => {
-        if (res.ok) return res.json();
-        throw new Error("Unable to fetch content");
-      })
+    fetchContent()
       .then((data) => {
         if (data.partners) setPartners(data.partners);
         if (data.siteSettings) applySeoDescription(data.siteSettings);

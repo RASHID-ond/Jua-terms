@@ -4,6 +4,8 @@ import { MapPin, Phone, Mail, Twitter, ArrowRight, Check } from "lucide-react";
 import Logo from "../components/Logo";
 import { applySeoDescription } from "../utils/seo";
 import { CAMPAIGN_CONTACT } from "../data/campaignData";
+import { fetchContent } from "../lib/content";
+import { supabase } from "../lib/supabaseClient";
 
 export default function ContactPage() {
   const [siteSettings, setSiteSettings] = useState(CAMPAIGN_CONTACT);
@@ -13,11 +15,7 @@ export default function ContactPage() {
 
   useEffect(() => {
     document.title = "Contact Us | Jua Terms";
-    fetch("/api/content")
-      .then((res) => {
-        if (res.ok) return res.json();
-        throw new Error("Unable to fetch content");
-      })
+    fetchContent()
       .then((data) => {
         if (data.siteSettings) {
           setSiteSettings(data.siteSettings);
@@ -33,21 +31,21 @@ export default function ContactPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const res = await fetch("/api/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(contactForm)
+      const { error } = await supabase.from("messages").insert({
+        name: contactForm.name,
+        email: contactForm.email,
+        message: contactForm.message
       });
-      if (res.ok) {
+      if (!error) {
         setIsSubmitted(true);
         setContactForm({ name: "", email: "", message: "" });
         setTimeout(() => setIsSubmitted(false), 5000); // clear success alert after 5s
       } else {
-        throw new Error("API submission failed");
+        throw new Error("Supabase submission failed");
       }
     } catch (err) {
       console.error(err);
-      // Fallback submission simulation if local network/db fails
+      // Fallback submission simulation if network/Supabase fails
       setTimeout(() => {
         setIsSubmitted(true);
         setContactForm({ name: "", email: "", message: "" });

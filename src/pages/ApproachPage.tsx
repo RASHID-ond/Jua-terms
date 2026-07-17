@@ -3,17 +3,14 @@ import { motion } from "motion/react";
 import Timeline from "../components/Timeline";
 import { CAMPAIGN_APPROACH } from "../data/campaignData";
 import { applySeoDescription } from "../utils/seo";
+import { fetchContent } from "../lib/content";
 
 export default function ApproachPage() {
   const [approach, setApproach] = useState(CAMPAIGN_APPROACH);
 
   useEffect(() => {
     document.title = "Our Approach | Jua Terms";
-    fetch("/api/content")
-      .then((res) => {
-        if (res.ok) return res.json();
-        throw new Error("Unable to fetch content");
-      })
+    fetchContent()
       .then((data) => {
         if (data.approach) setApproach(data.approach);
         if (data.siteSettings) applySeoDescription(data.siteSettings);
