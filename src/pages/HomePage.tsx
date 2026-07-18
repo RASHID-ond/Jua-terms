@@ -15,6 +15,10 @@ import {
 const DEFAULT_HOME_TITLE = "Jua Terms | Simplify · Clarify · Consent";
 const DEFAULT_HERO_TITLE = "JUA TERMS PROFILE";
 const DEFAULT_HERO_SUBTITLE = "Simplify. Clarify. Champion Informed Consent.";
+const DEFAULT_TAGLINE_QUOTE = "Consent Starts with Clarity.";
+const DEFAULT_BADGE_TEXT = "Empowering Kenyan Citizens Since 2024";
+const DEFAULT_WELCOME_HEADING = "Welcome to Jua Terms";
+const DEFAULT_HIGHLIGHTS_EYEBROW = "Our Journey & Milestones";
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -47,6 +51,10 @@ export default function HomePage() {
 
   const heroTitle = siteSettings?.heroTitle || DEFAULT_HERO_TITLE;
   const heroSubtitle = siteSettings?.heroSubtitle || DEFAULT_HERO_SUBTITLE;
+  const taglineQuote = siteSettings?.taglineQuote || DEFAULT_TAGLINE_QUOTE;
+  const badgeText = siteSettings?.badgeText || DEFAULT_BADGE_TEXT;
+  const welcomeHeading = siteSettings?.welcomeHeading || DEFAULT_WELCOME_HEADING;
+  const highlightsEyebrow = siteSettings?.highlightsEyebrow || DEFAULT_HIGHLIGHTS_EYEBROW;
 
   return (
     <motion.div
@@ -84,7 +92,7 @@ export default function HomePage() {
         <div className="relative bg-[#0F2438] text-[#F1EFE7] pt-8 pb-32 px-4 text-center rounded-b-[70px] md:rounded-b-[100px] mt-[-30px] z-0 shadow-lg">
           <div className="max-w-3xl mx-auto flex flex-col items-center">
             <h2 className="text-xl md:text-2xl font-sans text-gray-200 font-medium mb-8 italic tracking-wide">
-              "Consent Starts with Clarity."
+              "{taglineQuote}"
             </h2>
 
             {/* CTA buttons */}
@@ -126,7 +134,7 @@ export default function HomePage() {
             <div className="inline-flex items-center space-x-2 bg-white/60 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/40 shadow-sm">
               <Users className="w-4 h-4 text-[#0F2438]" />
               <span className="text-xs font-bold uppercase tracking-wider text-[#0F2438]">
-                Empowering Kenyan Citizens Since 2024
+                {badgeText}
               </span>
             </div>
           </div>
@@ -142,7 +150,7 @@ export default function HomePage() {
               <Logo size="sm" light={true} customImage={siteSettings?.logoImage} />
             </div>
             <h2 className="text-2xl md:text-3xl font-display font-extrabold uppercase mb-4 text-[#7ED957]">
-              Welcome to Jua Terms
+              {welcomeHeading}
             </h2>
             <p className="text-gray-200 text-base md:text-lg max-w-3xl leading-relaxed mb-6 font-normal">
               {about.body || about.text}
@@ -163,7 +171,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12">
             <div>
-              <span className="text-[#F97316] text-xs font-bold uppercase tracking-wider block mb-2">Our Journey & Milestones</span>
+              <span className="text-[#F97316] text-xs font-bold uppercase tracking-wider block mb-2">{highlightsEyebrow}</span>
               <h2 className="text-3xl md:text-5xl font-display font-black text-[#0F2438] uppercase">Campaign Highlights</h2>
             </div>
             <button 

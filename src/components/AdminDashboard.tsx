@@ -26,7 +26,8 @@ import {
   ChevronRight,
   TrendingUp,
   Download,
-  AlertCircle
+  AlertCircle,
+  Heart
 } from "lucide-react";
 
 import { supabase } from "../lib/supabaseClient";
@@ -561,6 +562,7 @@ export default function AdminDashboard({ onBackToSite, onContentUpdated }: Admin
             { id: "highlights", label: "Campaign Highlights", icon: ImageIcon },
             { id: "team", label: "Team Members", icon: Users },
             { id: "partners", label: "Sponsors & Partners", icon: ExternalLink },
+            { id: "footer", label: "Thank You Footer", icon: Heart },
             { id: "messages", label: "Contact Inbox", icon: MessageSquare, badge: unreadMessagesCount },
             { id: "settings", label: "Site & SEO Settings", icon: Settings },
             ...(user.role === "Super Admin" ? [{ id: "admins", label: "Admin Accounts", icon: Shield }] : [])
@@ -771,14 +773,36 @@ export default function AdminDashboard({ onBackToSite, onContentUpdated }: Admin
                 <p className="text-xs text-slate-400">Edit the primary introductory bio displayed in Section B.</p>
               </div>
 
-              <div>
-                <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Bio Text</label>
-                <textarea
-                  rows={4}
-                  value={about?.body || ""}
-                  onChange={(e) => setAbout({ ...about, body: e.target.value })}
-                  className="w-full bg-slate-50 border border-gray-200 rounded-2xl p-4 text-sm focus:outline-none focus:border-[#7ED957] transition-all text-slate-800 font-medium"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                <div className="md:col-span-8">
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Bio Text</label>
+                  <textarea
+                    rows={7}
+                    value={about?.body || ""}
+                    onChange={(e) => setAbout({ ...about, body: e.target.value })}
+                    className="w-full bg-slate-50 border border-gray-200 rounded-2xl p-4 text-sm focus:outline-none focus:border-[#7ED957] transition-all text-slate-800 font-medium"
+                  />
+                </div>
+
+                <div className="md:col-span-4">
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Portrait Image</label>
+                  <div className="relative rounded-2xl overflow-hidden aspect-square bg-slate-50 border border-slate-200 flex flex-col items-center justify-center">
+                    {about?.portraitImage ? (
+                      <img src={about.portraitImage} alt="About portrait" className="absolute inset-0 w-full h-full object-cover" />
+                    ) : (
+                      <ImageIcon className="w-8 h-8 text-slate-300 stroke-[1.5]" />
+                    )}
+                    <label className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 flex items-center justify-center text-white text-[9px] font-black uppercase tracking-wider cursor-pointer transition-opacity">
+                      Upload
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleImageUpload(e, (url) => setAbout({ ...about, portraitImage: url }))}
+                      />
+                    </label>
+                  </div>
+                </div>
               </div>
 
               <div className="flex justify-end pt-3">
@@ -827,6 +851,34 @@ export default function AdminDashboard({ onBackToSite, onContentUpdated }: Admin
                       })}
                       className="w-full bg-slate-50 border border-gray-200 rounded-2xl p-4 text-sm focus:outline-none focus:border-[#7ED957] transition-all text-slate-800 font-medium"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Vision Photos</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[0, 1].map((idx) => (
+                        <div key={idx} className="relative rounded-xl overflow-hidden aspect-square bg-slate-50 border border-slate-200 flex flex-col items-center justify-center">
+                          {visionMission?.images?.[idx]?.url ? (
+                            <img src={visionMission.images[idx].url} alt={visionMission.images[idx].alt || `Vision ${idx + 1}`} className="absolute inset-0 w-full h-full object-cover" />
+                          ) : (
+                            <ImageIcon className="w-6 h-6 text-slate-300 stroke-[1.5]" />
+                          )}
+                          <label className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 flex items-center justify-center text-white text-[8px] font-black uppercase tracking-wider cursor-pointer transition-opacity">
+                            Upload
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => handleImageUpload(e, (url) => {
+                                const newImages = [...(visionMission.images || [{}, {}])];
+                                newImages[idx] = { ...newImages[idx], url };
+                                setVisionMission({ ...visionMission, images: newImages });
+                              })}
+                            />
+                          </label>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
@@ -1742,6 +1794,113 @@ export default function AdminDashboard({ onBackToSite, onContentUpdated }: Admin
         )}
 
         {/* ---------------------------------------------------- */}
+        {/* TAB: THANK YOU FOOTER */}
+        {/* ---------------------------------------------------- */}
+        {activeTab === "footer" && (
+          <div className="space-y-8 animate-fade-in-up">
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+              {/* Group photo editor */}
+              <div className="lg:col-span-5 bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-base font-display font-black text-[#0F2438] uppercase">Group Photo</h3>
+                    <p className="text-xs text-slate-400">Edit the closing photo shown in the Thank You footer section.</p>
+                  </div>
+
+                  <div className="relative rounded-2xl overflow-hidden aspect-square bg-slate-50 border border-slate-200 flex flex-col items-center justify-center">
+                    {footer?.groupPhoto ? (
+                      <img src={footer.groupPhoto} alt="Footer group" className="absolute inset-0 w-full h-full object-cover" />
+                    ) : (
+                      <ImageIcon className="w-10 h-10 text-slate-300 stroke-[1.5]" />
+                    )}
+
+                    <div className="absolute inset-x-0 bottom-0 bg-black/60 backdrop-blur-sm p-4 flex flex-col items-center gap-2">
+                      <span className="text-[9px] text-gray-200 truncate max-w-full font-semibold">
+                        {uploadLoading === "footer-image" ? "Processing image..." : "Update Group Photo"}
+                      </span>
+                      <label className="px-4 py-2 bg-[#7ED957] hover:bg-[#6ec248] text-[#0F2438] rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer transition-colors shadow flex items-center gap-1.5">
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Upload File</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleImageUpload(e, (url) => setFooter({ ...footer, groupPhoto: url }))}
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Image URL fallback</label>
+                    <input
+                      type="text"
+                      value={footer?.groupPhoto || ""}
+                      onChange={(e) => setFooter({ ...footer, groupPhoto: e.target.value })}
+                      className="w-full bg-slate-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#7ED957]"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-6 border-t border-slate-50 mt-6">
+                  <button
+                    onClick={() => saveContent({ footer })}
+                    className="px-5 py-2.5 bg-[#0F2438] hover:bg-[#7ED957] text-[#F1EFE7] hover:text-[#0F2438] font-display font-black uppercase text-[10px] tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Save Photo</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Heading + text editor */}
+              <div className="lg:col-span-7 bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-base font-display font-black text-[#0F2438] uppercase">Thank You Message</h3>
+                    <p className="text-xs text-slate-400">Edit the closing heading and message shown at the bottom of the homepage.</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Heading</label>
+                    <input
+                      type="text"
+                      value={footer?.heading || ""}
+                      onChange={(e) => setFooter({ ...footer, heading: e.target.value })}
+                      className="w-full bg-slate-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7ED957] text-slate-800 font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Message</label>
+                    <textarea
+                      rows={6}
+                      value={footer?.text || ""}
+                      onChange={(e) => setFooter({ ...footer, text: e.target.value })}
+                      className="w-full bg-slate-50 border border-gray-200 rounded-2xl p-4 text-sm focus:outline-none focus:border-[#7ED957] transition-all text-slate-800 font-medium"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-6 border-t border-slate-50 mt-6">
+                  <button
+                    onClick={() => saveContent({ footer })}
+                    className="px-5 py-2.5 bg-[#0F2438] hover:bg-[#7ED957] text-[#F1EFE7] hover:text-[#0F2438] font-display font-black uppercase text-[10px] tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Save Message</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        )}
+
+        {/* ---------------------------------------------------- */}
         {/* TAB 9: CONTACT INBOX */}
         {/* ---------------------------------------------------- */}
         {activeTab === "messages" && (
@@ -1843,8 +2002,8 @@ export default function AdminDashboard({ onBackToSite, onContentUpdated }: Admin
             {/* Homepage Hero details */}
             <div className="bg-white border border-slate-100 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
               <div>
-                <h3 className="text-lg font-display font-black text-[#0F2438] uppercase">Homepage Hero</h3>
-                <p className="text-xs text-slate-400">Edit the large headline and subheading shown at the top of the homepage.</p>
+                <h3 className="text-lg font-display font-black text-[#0F2438] uppercase">Homepage Content</h3>
+                <p className="text-xs text-slate-400">Edit every editable text block on the homepage, from the top hero down to the highlights teaser.</p>
               </div>
 
               <div className="grid grid-cols-1 gap-6">
@@ -1869,6 +2028,51 @@ export default function AdminDashboard({ onBackToSite, onContentUpdated }: Admin
                     className="w-full bg-slate-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7ED957] text-slate-800 font-semibold"
                   />
                 </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Tagline Quote</label>
+                  <input
+                    type="text"
+                    placeholder="Consent Starts with Clarity."
+                    value={siteSettings?.taglineQuote || ""}
+                    onChange={(e) => setSiteSettings({ ...siteSettings, taglineQuote: e.target.value })}
+                    className="w-full bg-slate-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7ED957] text-slate-800 font-semibold"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">Shown italicized just below the hero, quotation marks added automatically.</p>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Group Photo Badge Text</label>
+                  <input
+                    type="text"
+                    placeholder="Empowering Kenyan Citizens Since 2024"
+                    value={siteSettings?.badgeText || ""}
+                    onChange={(e) => setSiteSettings({ ...siteSettings, badgeText: e.target.value })}
+                    className="w-full bg-slate-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7ED957] text-slate-800 font-semibold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Welcome Section Heading</label>
+                  <input
+                    type="text"
+                    placeholder="Welcome to Jua Terms"
+                    value={siteSettings?.welcomeHeading || ""}
+                    onChange={(e) => setSiteSettings({ ...siteSettings, welcomeHeading: e.target.value })}
+                    className="w-full bg-slate-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7ED957] text-slate-800 font-semibold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Highlights Section Eyebrow Label</label>
+                  <input
+                    type="text"
+                    placeholder="Our Journey & Milestones"
+                    value={siteSettings?.highlightsEyebrow || ""}
+                    onChange={(e) => setSiteSettings({ ...siteSettings, highlightsEyebrow: e.target.value })}
+                    className="w-full bg-slate-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7ED957] text-slate-800 font-semibold"
+                  />
+                </div>
               </div>
 
               <div className="flex justify-end pt-3 border-t border-slate-100">
@@ -1877,7 +2081,7 @@ export default function AdminDashboard({ onBackToSite, onContentUpdated }: Admin
                   className="px-6 py-3 bg-[#0F2438] hover:bg-[#7ED957] text-[#F1EFE7] hover:text-[#0F2438] font-display font-black uppercase text-xs tracking-wider rounded-xl transition-all shadow flex items-center gap-2 cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
-                  <span>Save Hero Settings</span>
+                  <span>Save Homepage Content</span>
                 </button>
               </div>
             </div>
