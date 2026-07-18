@@ -2073,11 +2073,63 @@ export default function AdminDashboard({ onBackToSite, onContentUpdated }: Admin
                     className="w-full bg-slate-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#7ED957] text-slate-800 font-semibold"
                   />
                 </div>
+
+                <div className="border-t border-slate-100 pt-6">
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-[#0F2438] mb-2.5">
+                    Circular Group Photo
+                  </label>
+                  <p className="text-xs text-slate-400 mb-4">
+                    The photo shown in the circular frame just below the tagline quote.
+                    This same photo also appears in the Thank You footer at the bottom of the site.
+                  </p>
+
+                  <div className="flex items-center gap-5">
+                    <div className="w-24 h-24 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
+                      {footer?.groupPhoto ? (
+                        <img
+                          src={footer.groupPhoto}
+                          alt="Group photo preview"
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <ImageIcon className="w-8 h-8 text-slate-300 stroke-[1.5]" />
+                      )}
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <label className="inline-flex items-center justify-center px-4 py-2 bg-[#0F2438] hover:bg-[#7ED957] text-[#F1EFE7] hover:text-[#0F2438] font-display font-black uppercase text-[10px] tracking-wider rounded-xl transition-all cursor-pointer shadow-sm border border-transparent">
+                        <span>Choose Photo</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleImageUpload(e, (url) => {
+                            setFooter({ ...footer, groupPhoto: url });
+                            showToast("Group photo queued. Click 'Save' to apply changes.");
+                          })}
+                        />
+                      </label>
+                      {footer?.groupPhoto && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFooter({ ...footer, groupPhoto: "" });
+                            showToast("Group photo cleared. Click 'Save' to apply changes.");
+                          }}
+                          className="text-[10px] font-black uppercase tracking-wider text-red-500 hover:text-red-600 text-left transition-colors cursor-pointer bg-transparent border-none py-1 block"
+                        >
+                          Clear photo
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="flex justify-end pt-3 border-t border-slate-100">
                 <button
-                  onClick={() => saveContent({ siteSettings })}
+                  onClick={() => saveContent({ siteSettings, footer })}
                   className="px-6 py-3 bg-[#0F2438] hover:bg-[#7ED957] text-[#F1EFE7] hover:text-[#0F2438] font-display font-black uppercase text-xs tracking-wider rounded-xl transition-all shadow flex items-center gap-2 cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
