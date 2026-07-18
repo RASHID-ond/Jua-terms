@@ -5,6 +5,7 @@ import { useNavigate, useOutletContext } from "react-router-dom";
 import Logo from "../components/Logo";
 import { applySeoDescription } from "../utils/seo";
 import { fetchContent } from "../lib/content";
+import PageLoader from "../components/PageLoader";
 import { 
   CAMPAIGN_ABOUT, 
   CAMPAIGN_HIGHLIGHTS, 
@@ -29,6 +30,8 @@ export default function HomePage() {
   const [siteSettings, setSiteSettings] = useState<any>(CAMPAIGN_CONTACT);
   const [selectedHighlight, setSelectedHighlight] = useState<any | null>(null);
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     document.title = DEFAULT_HOME_TITLE;
     fetchContent()
@@ -43,9 +46,11 @@ export default function HomePage() {
           document.title = data.siteSettings.seoTitle || DEFAULT_HOME_TITLE;
           applySeoDescription(data.siteSettings);
         }
+        setLoading(false);
       })
       .catch((err) => {
         console.log("Database fetch failed or not initialized. Using static campaignData fallbacks.", err);
+        setLoading(false);
       });
   }, []);
 
@@ -55,6 +60,8 @@ export default function HomePage() {
   const badgeText = siteSettings?.badgeText || DEFAULT_BADGE_TEXT;
   const welcomeHeading = siteSettings?.welcomeHeading || DEFAULT_WELCOME_HEADING;
   const highlightsEyebrow = siteSettings?.highlightsEyebrow || DEFAULT_HIGHLIGHTS_EYEBROW;
+
+  if (loading) return <PageLoader />;
 
   return (
     <motion.div
@@ -123,7 +130,7 @@ export default function HomePage() {
             id="hero-group-photo-frame"
           >
             <img 
-              src={footer.groupPhoto || "https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&q=80&w=600&h=600"} 
+              src={footer.groupPhoto} 
               alt="Jua Terms advocacy campaigners group" 
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover"

@@ -3,10 +3,13 @@ import { motion } from "motion/react";
 import { CAMPAIGN_ABOUT, CAMPAIGN_VISION_MISSION } from "../data/campaignData";
 import { applySeoDescription } from "../utils/seo";
 import { fetchContent } from "../lib/content";
+import PageLoader from "../components/PageLoader";
 
 export default function AboutPage() {
   const [about, setAbout] = useState(CAMPAIGN_ABOUT);
   const [visionMission, setVisionMission] = useState(CAMPAIGN_VISION_MISSION);
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     document.title = "About Us | Jua Terms";
@@ -15,11 +18,15 @@ export default function AboutPage() {
         if (data.about) setAbout(data.about);
         if (data.visionMission) setVisionMission(data.visionMission);
         if (data.siteSettings) applySeoDescription(data.siteSettings);
+        setLoading(false);
       })
       .catch((err) => {
         console.log("Database fetch failed or not initialized. Using static campaignData fallbacks.", err);
+        setLoading(false);
       });
   }, []);
+
+  if (loading) return <PageLoader />;
 
   return (
     <motion.div
@@ -65,7 +72,7 @@ export default function AboutPage() {
                 id="about-portrait-frame"
               >
                 <img 
-                  src={about.portraitImage || "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&q=80&w=600&h=400"} 
+                  src={about.portraitImage} 
                   alt="About Jua Terms Campaign Portrait" 
                   referrerPolicy="no-referrer"
                   className="w-full h-auto object-cover group-hover:scale-102 transition-transform duration-500" 
@@ -110,7 +117,7 @@ export default function AboutPage() {
                   
                   <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-md aspect-square bg-slate-100">
                     <img 
-                      src={visionMission.images?.[0]?.url || "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&q=80&w=600&h=400"} 
+                      src={visionMission.images?.[0]?.url} 
                       alt={visionMission.images?.[0]?.alt || "Vision 1"} 
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -124,7 +131,7 @@ export default function AboutPage() {
                   
                   <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-md aspect-square bg-slate-100">
                     <img 
-                      src={visionMission.images?.[1]?.url || "https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&q=80&w=600&h=400"} 
+                      src={visionMission.images?.[1]?.url} 
                       alt={visionMission.images?.[1]?.alt || "Vision 2"} 
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"

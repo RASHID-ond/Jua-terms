@@ -4,9 +4,12 @@ import Timeline from "../components/Timeline";
 import { CAMPAIGN_EVENTS } from "../data/campaignData";
 import { applySeoDescription } from "../utils/seo";
 import { fetchContent } from "../lib/content";
+import PageLoader from "../components/PageLoader";
 
 export default function EventsPage() {
   const [events, setEvents] = useState(CAMPAIGN_EVENTS);
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     document.title = "Our Events | Jua Terms";
@@ -14,11 +17,15 @@ export default function EventsPage() {
       .then((data) => {
         if (data.events) setEvents(data.events);
         if (data.siteSettings) applySeoDescription(data.siteSettings);
+        setLoading(false);
       })
       .catch((err) => {
         console.log("Database fetch failed or not initialized. Using static campaignData fallbacks.", err);
+        setLoading(false);
       });
   }, []);
+
+  if (loading) return <PageLoader />;
 
   return (
     <motion.div

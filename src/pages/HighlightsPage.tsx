@@ -5,11 +5,14 @@ import { CAMPAIGN_HIGHLIGHTS } from "../data/campaignData";
 import CampaignHighlightsSection from "../components/CampaignHighlightsSection";
 import { applySeoDescription } from "../utils/seo";
 import { fetchContent } from "../lib/content";
+import PageLoader from "../components/PageLoader";
 
 export default function HighlightsPage() {
   const [highlights, setHighlights] = useState(CAMPAIGN_HIGHLIGHTS);
   const [highlightFilter, setHighlightFilter] = useState("All");
   const [selectedHighlight, setSelectedHighlight] = useState<any | null>(null);
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     document.title = "Campaign Highlights | Jua Terms";
@@ -17,11 +20,15 @@ export default function HighlightsPage() {
       .then((data) => {
         if (data.highlights) setHighlights(data.highlights);
         if (data.siteSettings) applySeoDescription(data.siteSettings);
+        setLoading(false);
       })
       .catch((err) => {
         console.log("Database fetch failed or not initialized. Using static campaignData fallbacks.", err);
+        setLoading(false);
       });
   }, []);
+
+  if (loading) return <PageLoader />;
 
   return (
     <motion.div

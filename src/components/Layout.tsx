@@ -230,13 +230,15 @@ export default function Layout() {
 
             {/* Compact Team Photo */}
             <div className="flex flex-col items-center gap-2 shrink-0">
-              <div className="relative group w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-white/80 shadow-md overflow-hidden hover:scale-105 transition-transform duration-300">
-                <img 
-                  src={footer.groupPhoto || "https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&q=80&w=400&h=400"} 
-                  alt="Jua Terms group portrait" 
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover"
-                />
+              <div className="relative group w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-white/80 shadow-md overflow-hidden hover:scale-105 transition-transform duration-300 bg-white/5">
+                {footer.groupPhoto && (
+                  <img
+                    src={footer.groupPhoto}
+                    alt="Jua Terms group portrait"
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover"
+                  />
+                )}
               </div>
               <div className="font-display text-[#7ED957] text-[10px] font-extrabold uppercase tracking-widest text-center">
                 Together We Simplify · Clarify

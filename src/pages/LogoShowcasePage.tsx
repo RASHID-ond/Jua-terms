@@ -2,9 +2,11 @@ import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import Logo from "../components/Logo";
 import { fetchContent } from "../lib/content";
+import PageLoader from "../components/PageLoader";
 
 export default function LogoShowcasePage() {
   const [logoImage, setLogoImage] = useState<string | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     document.title = "Our Logo | Jua Terms";
@@ -13,9 +15,14 @@ export default function LogoShowcasePage() {
         if (data.siteSettings && data.siteSettings.logoImage) {
           setLogoImage(data.siteSettings.logoImage);
         }
+        setLoading(false);
       })
-      .catch(() => {});
+      .catch(() => {
+        setLoading(false);
+      });
   }, []);
+
+  if (loading) return <PageLoader />;
 
   return (
     <motion.div

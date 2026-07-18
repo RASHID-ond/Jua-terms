@@ -6,12 +6,15 @@ import { applySeoDescription } from "../utils/seo";
 import { CAMPAIGN_CONTACT } from "../data/campaignData";
 import { fetchContent } from "../lib/content";
 import { supabase } from "../lib/supabaseClient";
+import PageLoader from "../components/PageLoader";
 
 export default function ContactPage() {
   const [siteSettings, setSiteSettings] = useState(CAMPAIGN_CONTACT);
   const [contactForm, setContactForm] = useState({ name: "", email: "", message: "" });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     document.title = "Contact Us | Jua Terms";
@@ -21,9 +24,11 @@ export default function ContactPage() {
           setSiteSettings(data.siteSettings);
           applySeoDescription(data.siteSettings);
         }
+        setLoading(false);
       })
       .catch((err) => {
         console.log("Database fetch failed or not initialized. Using static campaignData fallbacks.", err);
+        setLoading(false);
       });
   }, []);
 
@@ -55,6 +60,8 @@ export default function ContactPage() {
       setSubmitting(false);
     }
   };
+
+  if (loading) return <PageLoader />;
 
   return (
     <motion.div

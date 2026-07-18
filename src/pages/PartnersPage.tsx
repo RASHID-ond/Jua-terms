@@ -3,9 +3,12 @@ import { motion } from "motion/react";
 import { PARTNERS } from "../data/campaignData";
 import { applySeoDescription } from "../utils/seo";
 import { fetchContent } from "../lib/content";
+import PageLoader from "../components/PageLoader";
 
 export default function PartnersPage() {
   const [partners, setPartners] = useState(PARTNERS);
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     document.title = "Our Partners | Jua Terms";
@@ -13,11 +16,15 @@ export default function PartnersPage() {
       .then((data) => {
         if (data.partners) setPartners(data.partners);
         if (data.siteSettings) applySeoDescription(data.siteSettings);
+        setLoading(false);
       })
       .catch((err) => {
         console.log("Database fetch failed or not initialized. Using static campaignData fallbacks.", err);
+        setLoading(false);
       });
   }, []);
+
+  if (loading) return <PageLoader />;
 
   return (
     <motion.div

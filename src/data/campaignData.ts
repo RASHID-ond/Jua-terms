@@ -37,11 +37,11 @@ export const CAMPAIGN_VISION_MISSION = {
   },
   images: [
     {
-      url: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&q=80&w=600&h=400",
+      url: "",
       alt: "Campaign session work"
     },
     {
-      url: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&q=80&w=600&h=400",
+      url: "",
       alt: "University campus briefing and discussion"
     }
   ]
@@ -50,7 +50,7 @@ export const CAMPAIGN_VISION_MISSION = {
 export const CAMPAIGN_FOCUS_AREAS = {
   title: "Our Focus Areas",
   subheading: "Consent Starts with Clarity.",
-  image: "https://images.unsplash.com/photo-1544027993-37dbfe43562a?auto=format&fit=crop&q=80&w=600&h=800",
+  image: "",
   items: [
     { id: 1, description: "We engage university students to champion informed consent and digital rights." },
     { id: 2, description: "We call on technology companies to use clear, simple, and transparent terms and conditions." },
@@ -62,7 +62,7 @@ export const CAMPAIGN_FOCUS_AREAS = {
 export const CAMPAIGN_APPROACH = {
   title: "Our Approach",
   subheading: "We promote clear, accessible, and understandable terms and conditions for all users.",
-  image: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&q=80&w=600&h=800",
+  image: "",
   items: [
     { id: 1, description: "We promote translations, sign language, and other accessible formats." },
     { id: 2, description: "We encourage short videos, animations, and infographics to explain complex terms." },
@@ -105,7 +105,7 @@ export const CAMPAIGN_HIGHLIGHTS = {
   quote: "Every engagement is guided by clarity, purpose, and impact.",
   images: [
     {
-      url: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=600&h=450",
+      url: "",
       alt: "Interactive group discussion",
       title: "CUEA Student Roundtables",
       date: "May 2024",
@@ -115,7 +115,7 @@ export const CAMPAIGN_HIGHLIGHTS = {
       impact: "Mobilized 150+ student advocates to champion terms clarification and campus-wide rights awareness."
     },
     {
-      url: "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&q=80&w=600&h=450",
+      url: "",
       alt: "Dialogue presentation and ceremony",
       title: "CIPESA Grant Recognition",
       date: "September 2024",
@@ -125,7 +125,7 @@ export const CAMPAIGN_HIGHLIGHTS = {
       impact: "Secured vital institutional funding and connected Jua Terms to a broad regional digital rights network."
     },
     {
-      url: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=600&h=450",
+      url: "",
       alt: "Campaign launch stakeholder panel",
       title: "Official Jua Terms Launch Panel",
       date: "November 2024",
@@ -135,7 +135,7 @@ export const CAMPAIGN_HIGHLIGHTS = {
       impact: "Established a collaborative memorandum on digital consent standards signed by university and legal society representatives."
     },
     {
-      url: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&q=80&w=600&h=450",
+      url: "",
       alt: "Educational classroom interactive training",
       title: "MKU Campus Advocacy Lecture",
       date: "October 2024",
@@ -152,25 +152,25 @@ export const TEAM_MEMBERS: TeamMember[] = [
     name: "Abigael Goko",
     role: "Administration Coordinator",
     // Premium professional black female portrait
-    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400&h=500"
+    image: ""
   },
   {
     name: "Benjamin Kyamoneka",
     role: "Research Coordinator",
     // Friendly smiling young black male portrait
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400&h=500"
+    image: ""
   },
   {
     name: "Belinda Njeri",
     role: "Operations Coordinator",
     // Confident smiling young black female portrait
-    image: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=400&h=500"
+    image: ""
   },
   {
     name: "George N. Bush",
     role: "Creative Coordinator",
     // Modern young African male portrait
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400&h=500"
+    image: ""
   }
 ];
 
@@ -197,5 +197,5 @@ export const CAMPAIGN_CONTACT = {
 export const FOOTER_THANK_YOU = {
   heading: "Thank You",
   text: "Thank you for your continued support and engagement in advancing digital rights and informed consent. We appreciate your commitment to building a more transparent and inclusive digital space.",
-  groupPhoto: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800&h=800"
+  groupPhoto: ""
 };

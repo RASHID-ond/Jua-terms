@@ -4,9 +4,12 @@ import Timeline from "../components/Timeline";
 import { CAMPAIGN_FOCUS_AREAS } from "../data/campaignData";
 import { applySeoDescription } from "../utils/seo";
 import { fetchContent } from "../lib/content";
+import PageLoader from "../components/PageLoader";
 
 export default function FocusAreasPage() {
   const [focusAreas, setFocusAreas] = useState(CAMPAIGN_FOCUS_AREAS);
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     document.title = "Our Focus Areas | Jua Terms";
@@ -14,11 +17,15 @@ export default function FocusAreasPage() {
       .then((data) => {
         if (data.focusAreas) setFocusAreas(data.focusAreas);
         if (data.siteSettings) applySeoDescription(data.siteSettings);
+        setLoading(false);
       })
       .catch((err) => {
         console.log("Database fetch failed or not initialized. Using static campaignData fallbacks.", err);
+        setLoading(false);
       });
   }, []);
+
+  if (loading) return <PageLoader />;
 
   return (
     <motion.div
@@ -55,7 +62,7 @@ export default function FocusAreasPage() {
               
               <div className="rounded-[40px] overflow-hidden border-4 border-white shadow-xl aspect-[3/4] bg-slate-100">
                 <img 
-                  src={focusAreas.image || "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=600&h=800"} 
+                  src={focusAreas.image} 
                   alt="Focus Area leader" 
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-102"
