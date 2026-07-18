@@ -33,7 +33,8 @@ import {
 import { supabase } from "../lib/supabaseClient";
 import { fetchContent, saveContent as saveContentToSupabase } from "../lib/content";
 import { signIn, signOut, getCurrentAdmin, logAudit, type AdminProfile } from "../lib/auth";
-import { uploadImage } from "../lib/upload";
+import { uploadImage, type UploadProgress } from "../lib/upload";
+import { formatBytes } from "../lib/imageOptimize";
 
 interface AdminUser {
   id: string;
@@ -103,6 +104,7 @@ export default function AdminDashboard({ onBackToSite, onContentUpdated }: Admin
 
   // Upload state helper
   const [uploadLoading, setUploadLoading] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
 
   // Check for an existing Supabase session on load, and stay in sync with
   // sign-in/sign-out events (e.g. token refresh, or logging in from another tab).
@@ -237,16 +239,28 @@ export default function AdminDashboard({ onBackToSite, onContentUpdated }: Admin
     if (!file) return;
 
     setUploadLoading(file.name);
-    uploadImage(file)
-      .then((url) => {
-        callback(url);
-        showToast("Image uploaded successfully");
+    setUploadProgress({ stage: "validating", percent: 0, message: "Starting..." });
+
+    uploadImage(file, (progress) => setUploadProgress(progress))
+      .then((result) => {
+        callback(result.url);
+        if (result.optimized) {
+          showToast(
+            `Image optimized: ${formatBytes(result.originalSize)} \u2192 ${formatBytes(result.optimizedSize)} ` +
+            `(${result.reductionPercent}% smaller)`
+          );
+        } else {
+          showToast("Image uploaded successfully");
+        }
       })
       .catch((err: any) => {
         showToast(err.message || "Upload failed", "error");
       })
       .finally(() => {
         setUploadLoading(null);
+        // Leave the final "done" state on screen briefly so the size
+        // reduction is actually visible before the progress card disappears.
+        setTimeout(() => setUploadProgress(null), 2500);
       });
   };
 
@@ -508,6 +522,28 @@ export default function AdminDashboard({ onBackToSite, onContentUpdated }: Admin
             <AlertCircle className="w-5 h-5 text-red-400" />
           )}
           <span className="text-xs font-bold">{notification.text}</span>
+        </div>
+      )}
+
+      {/* Image Upload Progress Card */}
+      {uploadProgress && (
+        <div className="fixed bottom-6 right-6 z-50 w-72 bg-white border border-slate-100 rounded-2xl shadow-xl p-4 animate-slide-in-right">
+          <div className="flex items-center gap-2 mb-2">
+            {uploadProgress.stage === "done" ? (
+              <CheckCircle className="w-4 h-4 text-[#7ED957] shrink-0" />
+            ) : (
+              <div className="w-4 h-4 border-2 border-[#7ED957] border-t-transparent rounded-full animate-spin shrink-0" />
+            )}
+            <span className="text-xs font-black text-[#0F2438] uppercase tracking-wide truncate">
+              {uploadProgress.message}
+            </span>
+          </div>
+          <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[#7ED957] transition-all duration-300 ease-out"
+              style={{ width: `${uploadProgress.percent}%` }}
+            />
+          </div>
         </div>
       )}
 
